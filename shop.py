@@ -1,15 +1,17 @@
 import os # Импортируем модуль для работы с путями
 from PIL import Image # Импортируем библиотеку для открытия картинок
+import customtkinter as ctk # Добавь импорт в начало shop.py
 
-# Создаем функцию торговца, которая принимает объект героя, базу данных и путь
 def start_trade(hero, info, BASE_DIR):
-    print("\n--- Лавка торговца ---") # Заголовок для красоты
-    print("Доступные товары:", list(info.keys())) # Показываем названия товаров из словаря
+    # Вместо torg = input(...)
+    dialog = ctk.CTkInputDialog(text="Что хочешь купить?", title="Лавка торговца")
+    torg = dialog.get_input() 
     
-    torg = input("Что хочешь купить? (Enter - выйти): ") # Спрашиваем выбор игрока
-
-    if torg == "": # Если игрок ничего не ввел
-        return hero.money, hero.damage # Просто возвращаем деньги и урон назад без изменений
+    if torg is None or torg == "": # Если нажал "Отмена" или ничего не ввел
+        return hero.money, hero.damage
+    
+    torg = torg.capitalize() # Чтобы "меч" превратился в "Меч"
+    # ... остальной твой код без изменений ...
 
     if torg in info: # Если товар есть в базе данных
         price = info[torg]["Цена"] # Узнаем цену

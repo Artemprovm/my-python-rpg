@@ -1,72 +1,50 @@
-import random  # Подключаем модуль для случайных чисел (выбор монстра и наград)
+import random
+import customtkinter as ctk
+from tkinter import messagebox
 
-# Создаем функцию охоты, которая принимает текущие данные игрока
-def start_hunt(hero):
-    # Создаем базу данных монстров (их статы)
+# Добавляем app в аргументы функции
+def start_hunt(hero, app): 
     monsters = {
-        # Название: {Здоровье, Урон, Мин. золото, Макс. золото}
         "Слизень": {"hp": 20, "dmg": 5, "min_g": 5, "max_g": 15},
         "Волк": {"hp": 50, "dmg": 12, "min_g": 20, "max_g": 45},
         "Огр": {"hp": 100, "dmg": 25, "min_g": 60, "max_g": 120}
     }
 
-    # Выбираем случайное имя из списка ключей (Слизень, Волк или Огр)
     name = random.choice(list(monsters.keys()))
-    # Извлекаем все характеристики выбранного монстра
     m_info = monsters[name]
-    # Записываем здоровье монстра в отдельную переменную для боя
     m_hp = m_info["hp"]
     
-    print(f"\n--- ВЫ ЗАМЕТИЛИ ВРАГА! ---")
-    # Выводим сообщение о встрече и показываем параметры монстра
-    print(f"Перед вами {name} (Жизни: {m_hp}, Сила: {m_info['dmg']})")
+    dialog = ctk.CTkInputDialog(text=f"Враг: {name} (HP: {m_hp}, Урон: {m_info['dmg']})\nБой или Побег?", title="Враг!")
+    choice_raw = dialog.get_input()
+    choice = choice_raw.lower() if choice_raw else "побег"
 
-    # Спрашиваем игрока, что он решит сделать перед началом схватки
-    choice = input("Что сделаешь? (бой / побег): ").lower()
-
-    # Если игрок выбрал попытку побега
     if choice == "побег":
-        # Генерируем шанс: если случайное число меньше 0.5 (то есть 50%)
         if random.random() < 0.5:
-            print("Вы проявили ловкость и успешно скрылись!")
-            return hero.hp, hero.money # Возвращаем данные без изменений, бой не начался
+            messagebox.showinfo("Побег", "Вы успешно скрылись!")
+            return hero.hp, hero.money
         else:
-            # Если шанс не сработал, монстр атакует сразу
-            print(f"Сбежать не удалось! {name} преградил вам путь и ударил!")
-            hero.hp -= m_info["dmg"] # Отнимаем здоровье у игрока
-            # Если игрок погиб от этого удара, сразу возвращаем результат
+            messagebox.showwarning("Побег", f"Сбежать не удалось! {name} ударил!")
+            hero.hp -= m_info["dmg"]
+            app.update_stats_ui() # ОБНОВЛЯЕМ ЭКРАН СРАЗУ
             if hero.hp <= 0: return hero.hp, hero.money
 
-    # --- НАЧАЛО БОЕВОГО ЦИКЛА ---
-    # Цикл будет работать, пока и у игрока, и у монстра больше 0 здоровья
     while m_hp > 0 and hero.hp > 0:
-        # Каждый ход выводим текущее состояние здоровья обеих сторон
-        print(f"\n[ ВАШЕ HP: {hero.hp} ] VS [ HP {name.upper()}: {m_hp} ]")
-        # Делаем паузу, чтобы игрок мог прочитать текст и нажать Enter для удара
-        input("Нажми Enter, чтобы атаковать!")
+        battle_step = ctk.CTkInputDialog(text=f"Ваше HP: {hero.hp} | HP Врага: {m_hp}\nЖмите OK для атаки!", title="БИТВА")
+        if battle_step.get_input() is None: break
 
-        # --- ХОД ИГРОКА ---
-        # Вычитаем накопленный урон игрока из здоровья монстра
         m_hp -= hero.damage
-        print(f"-> Вы нанесли {hero.damage} урона!")
-
-        # Сразу проверяем: если здоровье монстра закончилось
+        
         if m_hp <= 0:
-            # Считаем случайную награду золотом
             gold_win = random.randint(m_info["min_g"], m_info["max_g"])
-            hero.money += gold_win # Добавляем золото игроку
-            print(f"!!! ПОБЕДА !!! {name} повержен! Вы нашли {gold_win} золотых.")
-            break # Выходим из цикла битвы (while), так как противник мертв
+            hero.money += gold_win
+            messagebox.showinfo("ПОБЕДА", f"{name} повержен!\nНаграда: {gold_win} золота.")
+            break
 
-        # --- ХОД МОНСТРА ---
-        # Если монстр еще жив, он бьет в ответ
         hero.hp -= m_info["dmg"]
-        print(f"<- {name} атакует и отнимает {m_info['dmg']} HP!")
+        app.update_stats_ui() # ОБНОВЛЯЕМ ЭКРАН СРАЗУ, чтобы видеть как падает HP
 
-        # Если наше здоровье упало до 0 или меньше
         if hero.hp <= 0:
-            print(f"Бой окончен... Вы проиграли {name}...")
-            # Цикл остановится сам на следующей проверке (hp > 0)
+            messagebox.showerror("ПОРАЖЕНИЕ", f"Вы погибли в бою с {name}...")
 
-    # После окончания боя возвращаем измененные hp и money в main.py
     return hero.hp, hero.money
+

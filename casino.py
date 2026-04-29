@@ -1,46 +1,48 @@
-import random # Импортируем модуль для игры в удачу
+import random
+import customtkinter as ctk
+from tkinter import messagebox
 
-# Создаем функцию казино, принимаем объект героя
-def start_gamble(hero):
-    print("\n--- ДОБРО ПОЖАЛОВАТЬ В КАЗИНО 'УДАЧНЫЙ СЛИЗЕНЬ' ---")
-    print(f"У вас в кошельке: {hero.money} золотых.")
+# Добавляем аргумент app, чтобы обновлять интерфейс
+def start_gamble(hero, app):
+    # Вместо print используем заголовок в диалоге
+    dialog = ctk.CTkInputDialog(
+        text=f"--- КАЗИНО 'УДАЧНЫЙ СЛИЗЕНЬ' ---\nУ вас в кошельке: {hero.money} золотых.\n\nСколько поставишь на кон?", 
+        title="🎰 Казино"
+    )
+    bet_input = dialog.get_input()
 
-    # Спрашиваем ставку
-    bet_input = input("Сколько поставишь на кон? (Введите число или 'выход'): ")
-
-    # Проверка на выход
-    if bet_input.lower() == "выход" or bet_input == "":
-        print("Вы решили сохранить деньги и ушли.")
+    # Проверка на выход (если нажал "Cancel" или закрыл окно)
+    if bet_input is None or bet_input.strip() == "":
         return hero.money
 
-    # Проверка: ввел ли игрок число, а не буквы
+    # Проверка: число ли это
     if not bet_input.isdigit():
-        print("Ошибка! Нужно вводить число.")
+        messagebox.showwarning("Ошибка", "Нужно вводить только числа!")
         return hero.money
 
-    bet = int(bet_input) # Переводим ввод из текста в целое число
+    bet = int(bet_input)
 
-    # Проверка: хватает ли денег на такую ставку
+    # Проверки ставки
     if bet > hero.money:
-        print("У вас нет столько денег! Не пытайся обмануть казино.")
+        messagebox.showwarning("Казино", "У вас нет столько денег!")
         return hero.money
     
     if bet <= 0:
-        print("Ставка должна быть больше нуля!")
+        messagebox.showwarning("Казино", "Ставка должна быть больше нуля!")
         return hero.money
 
-    # --- САМА ИГРА (Шанс 40% на победу, 60% на проигрыш) ---
-    print(f"Ставка {bet} принята! Крутим рулетку...")
+    # --- ИГРА ---
+    chance = random.random()
+
+    if chance < 0.4: # 40% шанс на победу
+        win_money = bet # Чистый выигрыш (игрок получает ставку назад + столько же сверху)
+        hero.money += win_money 
+        messagebox.showinfo("🎰 ПОБЕДА!", f"Поздравляем! Вы выиграли {win_money} золотых!")
+    else: 
+        hero.money -= bet 
+        messagebox.showerror("🎰 ПРОИГРЫШ", f"Удача не на вашей стороне. Вы потеряли {bet}.")
+
+    # ОБНОВЛЯЕМ ОКНО, чтобы золото изменилось сразу
+    app.update_stats_ui()
     
-    chance = random.random() # Генерируем число от 0.0 до 1.0
-
-    if chance < 0.4: # Если выпало меньше 0.4 (40% шанс)
-        win_money = bet * 2 # Выигрыш в двойном размере
-        hero.money += win_money # Добавляем к общему счету
-        print(f"!!! ПОБЕДА !!! Вы выиграли {win_money} золотых!")
-    else: # В остальных 60% случаев
-        hero.money -= bet # Забираем ставку
-        print(f"ПРОИГРЫШ. Удача сегодня не на вашей стороне. Вы потеряли {bet}.")
-
-    # Возвращаем обновленную сумму денег в main.py
     return hero.money
