@@ -4,10 +4,29 @@ import hunt # Подключаем твой файл hunt.py (охота)
 import casino # Подключаем казино
 import customtkinter as ctk
 import json # Подключаем json
+import sqlite3
 from tkinter import messagebox
-#import strings # Подключаем словарь
+#import strings # Подключаем настройки
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def init_db():
+    conn = sqlite3.connect("rpg_game.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS saves (
+            slot_id INTEGER PRIMARY KEY,
+            name TEXT,
+            hp INTEGER,
+            money INTEGER,
+            damage INTEGER,
+            inventar TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
 
 # --- Класс Игрока ---
 class Player:
@@ -151,58 +170,97 @@ class GameApp(ctk.CTk):
      casino.start_gamble(self.hero, self)
 
     def save_game(self):
-        data = {
-            "name": self.hero.name,
-            "hp": self.hero.hp,
-            "money": self.hero.money,
-            "inventar": self.hero.inventar,
-            "damage": self.hero.damage
-        }
-        with open(os.path.join(BASE_DIR, "save.json"), "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+    # Спрашиваем у игрока номер слота
+     slot = ctk.CTkInputDialog(text="Введите номер слота (1, 2, 3):", title="Сохранение").get_input()
+    
+     if not slot or not slot.isdigit():
+        messagebox.showwarning("Ошибка", "Введите число (номер слота)!")
+        return
+
+     conn = sqlite3.connect("rpg_game.db")
+     cursor = conn.cursor()
+     inv_string = ",".join(self.hero.inventar)
+
+     # Используем введенный slot вместо цифры 1
+     cursor.execute('''
+        INSERT OR REPLACE INTO saves (slot_id, name, hp, money, damage, inventar)
+        VALUES (?, ?, ?, ?, ?, ?)
+     ''', (int(slot), self.hero.name, self.hero.hp, self.hero.money, self.hero.damage, inv_string))
+    
+     conn.commit()
+     conn.close()
+     messagebox.showinfo("Успех", f"Игра сохранена в слот №{slot}!")
 
 
     def open_hunt(self):
-        if self.hero.hp <= 0:
-            messagebox.showwarning("Мертвец", "Вы уже мертвы!")
-            return 
+     if self.hero.hp <= 0:
+        messagebox.showwarning("Мертвец", "Мертвые не охотятся! Сначала восстановите здоровье.")
+        return 
 
-        # Вызываем охоту ОДИН раз и передаем self
-        hunt.start_hunt(self.hero, self)
-        
+    # Запускаем бой
+     hunt.start_hunt(self.hero, self)
+    
+    # Сразу обновляем цифры на экране
+     self.update_stats_ui()
+     self.update_idletasks() 
+
+    # Проверяем итог боя
+     if self.hero.hp <= 0:
+        # Здесь можно добавить логику штрафа, например, отобрать часть денег
+        self.hero.money = max(0, self.hero.money // 2)
+        messagebox.showerror("ПОРАЖЕНИЕ", "Вы погибли и потеряли половину золота!")
         self.update_stats_ui()
-        self.update_idletasks() 
 
-        if self.hero.hp <= 0:
-            messagebox.showerror("ПОРАЖЕНИЕ", "Вы погибли в бою!")
+class SaveMenu(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("Выбор сохранения")
+        self.geometry("300x400")
+        self.selected_slot = None  # Сюда запишем выбор
 
-    def save_game(self):
-        data = {
-            "name": self.hero.name,
-            "hp": self.hero.hp,
-            "money": self.hero.money,
-            "inventar": self.hero.inventar,
-            "damage": self.hero.damage
-        }
-        with open(os.path.join(BASE_DIR, "save.json"), "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        ctk.CTkLabel(self, text="Выберите слот:", font=("Arial", 20)).pack(pady=20)
+
+        # Создаем 3 кнопки для слотов
+        for i in range(1, 4):
+            btn = ctk.CTkButton(self, text=f"Слот {i}", 
+                               command=lambda s=i: self.choose_slot(s))
+            btn.pack(pady=10)
+            
+        # Кнопка для новой игры без слота
+        ctk.CTkButton(self, text="Новая игра", fg_color="gray",
+                       command=lambda: self.choose_slot(None)).pack(pady=20)
+
+    def choose_slot(self, slot):
+        self.selected_slot = slot
+        self.destroy() # Закрываем меню и идем дальше
 
 
 # --- ЗАПУСК ---
-hero = Player() # Создаем пустую заготовку
-save_path = os.path.join(BASE_DIR, "save.json")
+init_db()
+hero = Player()
 
-# Проверяем, есть ли файл сохранения
-if os.path.exists(save_path):
-    with open(save_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-        # Заполняем данные героя из файла
-        hero.name = data.get("name", "Герой")
-        hero.hp = data.get("hp", 100)
-        hero.money = data.get("money", 100)
-        hero.inventar = data.get("inventar", ["Зелье"])
-        hero.damage = data.get("damage", 5)
+# Спрашиваем номер слота при запуске
+# ВАЖНО: это должно быть ДО создания app = GameApp(hero)
+root_input = ctk.CTk()
+root_input.withdraw() # Прячем основное окно на время ввода
+slot_to_load = ctk.CTkInputDialog(text="Какой слот загрузить? (1, 2, 3...):", title="Загрузка").get_input()
+root_input.destroy()
 
-# Только теперь запускаем интерфейс с загруженными данными
+if slot_to_load and slot_to_load.isdigit():
+    conn = sqlite3.connect("rpg_game.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, hp, money, damage, inventar FROM saves WHERE slot_id = ?", (int(slot_to_load),))
+    row = cursor.fetchone()
+
+    if row:
+        hero.name, hero.hp, hero.money, hero.damage, inv_raw = row
+        hero.inventar = inv_raw.split(",") if inv_raw else []
+        print(f"Загружен герой из слота {slot_to_load}")
+    else:
+        print("Слот пуст, создаем нового героя.")
+    conn.close()
+
 app = GameApp(hero)
 app.mainloop()
+
+
