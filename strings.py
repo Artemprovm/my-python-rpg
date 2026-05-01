@@ -299,6 +299,88 @@ TEXTS = {
             "Лук": "弓",
             "Нож": "ナイフ"
         }
-    }
+    },
+        "zh": {
+        # 界面 (Page 2)
+        "app_title": "我的 RPG 游戏",
+        "new_game": "🔄 新游戏",
+        "shop": "🛒 商店",
+        "hunt": "⚔️ 打猎",
+        "casino": "🎰 赌场",
+        "save_btn": "💾 保存进度",
+        
+        # 状态与战斗 (Page 3 & 5)
+        "hero_dead": "英雄 ❌ {} 已经牺牲",
+        "status_bar": " 👤 {} | HP: ❤️ {} | 攻击: ⚔️ {} | 金币: 💰 {}",
+        "defeat_title": "战败",
+        "defeat_msg": "你牺牲了，并丢失了一半的金币！",
+
+        "load_title": "加载",
+        "load_ask": "要加载哪个存档？(1, 2, 3...):",
+        
+        # 系统窗口与逻辑 (Page 3, 4, 6)
+        "confirm_title": "确认",
+        "confirm_reset": "你确定要开始新游戏吗？所有进度将被删除！",
+        "new_hero_title": "新的冒险",
+        "new_hero_ask": "请输入新英雄的名字：",
+        "reset_success": "世界已重置。祝你好运！",
+        "save_title": "保存",
+        "save_file_ok": "你的英雄已成功写入文件！", 
+        "save_slot_ok": "游戏已保存到第 {} 号存档栏！", 
+        "slot_ask": "请输入存档栏编号 (1, 2, 3):",
+        "err_title": "错误",
+        "err_number": "请输入数字（存档栏编号）！",
+        "dead_warning_title": "死亡状态",
+        "dead_hunt_msg": "死人不能打猎！请先恢复生命值。",
+        "dead_casino_msg": "死人不需要钱！",
+
+        "casino_welcome": "--- “幸运史莱姆”赌场 ---",
+        "bet_ask": "你打算下多少赌注？",
+        "gold": "金币",
+        "win_title": "🎰 胜利！",
+        "win_msg": "恭喜！你赢得了 {} 金币！",
+        "lose_title": "🎰 输了",
+        "lose_msg": "运气不佳。你失去了 {}。",
+        "no_money": "你没有这么多钱！",
+        "min_bet": "赌注必须大于零！",
+
+        "enemy": "敌人",
+        "fight_or_run": "敌人: {} (HP: {}, 攻击: {})\n战斗还是逃跑？",
+        "run_success": "你成功逃脱了！",
+        "run_fail": "逃跑失败！{} 发起了攻击！",
+        "battle_title": "战斗",
+        "battle_status": "你的 HP: {} | 敌人 HP: {}\n点击 OK 进行攻击！",
+        "win_hunt": "{} 被击败了！\n奖励: {} 金币。",
+        "defeat_hunt": "你在与 {} 的战斗中牺牲了...",
+        "monsters": {
+         "Слизень": "史莱姆",
+         "Волк": "狼",
+         "Огр": "食人魔"
+        },
+
+        "info_title": "信息",
+        "slot_name": "存档栏",
+
+        "health_title": "健康值",
+        "healed": "你使用了 {}！",
+        "is_weapon_msg": "{} 不能使用，它是武器。",
+
+        "shop_title": "商人店铺",
+        "shop_ask": "你想买什么？",
+        "already_have": "你已经拥有 {} 了！为什么要买第二个？",
+        "buy_success": "成功！购买了 {}。你的总攻击力: {}",
+        "no_gold": "金币不足！",
+        "no_item": "商店里没有这种商品。",
+        "img_err": "无法加载图片。",
+        
+        # 物品与背包 (Page 1 & 4)
+        "use_item_msg": "你使用了 {}！",
+        "items": {
+            "Меч": "长剑",
+            "Зелье": "药水",
+            "Лук": "长弓",
+            "Нож": "短刀"
+        }
+    },
 }
 

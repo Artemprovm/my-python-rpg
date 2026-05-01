@@ -57,24 +57,26 @@ class GameApp(ctk.CTk):
         self.title(t["app_title"])
         self.geometry("700x500")
 
-        # 0. Выбор языка
-        # Устанавливаем начальное слово в зависимости от кода языка
-        if self.lang == "ru":
-            initial_lang = "Русский"
-        elif self.lang == "jp":
-            initial_lang = "日本語"
-        else:
-            initial_lang = "English"
+        # Соответствие кода языка названию в меню
+        display_names = {
+            "ru": "Русский",
+            "en": "English",
+            "jp": "日本語",
+            "zh": "简体中文"
+        }
+
+        # Получаем название для меню (если кода нет в словаре, будет "English")
+        initial_lang = display_names.get(self.lang, "English")
 
         self.lang_var = ctk.StringVar(value=initial_lang)
         self.lang_menu = ctk.CTkOptionMenu(
           self, 
-          values=["Русский", "English", "日本語"], # Добавили японский в список
+          # Список доступных названий берем прямо из словаря
+          values=list(display_names.values()), 
           command=self.change_language,
           variable=self.lang_var
         )
         self.lang_menu.pack(pady=10)
-
 
         # 1. Статус (ВАЖНО: Создаем ПЕРЕД вызовом update_stats_ui)
         self.stats_label = ctk.CTkLabel(self, text="", font=("Arial", 18, "bold"))
@@ -109,14 +111,17 @@ class GameApp(ctk.CTk):
 
 
     def change_language(self, choice):
-     # 1. Меняем код языка в зависимости от выбора
-     if choice == "Русский":
-        self.lang = "ru"
-     elif choice == "日本語" or choice == "Japanese": # Добавили японский
-        self.lang = "jp"
-     else:
-        self.lang = "en"
+     # Словарь соответствий: что в меню -> какой код в TEXTS
+     lang_map = {
+        "Русский": "ru",
+        "English": "en",
+        "日本語": "jp",
+        "简体中文": "zh"  #новый китайский!
+     }
     
+     # Берем код из словаря, если его там нет — оставляем английский по умолчанию
+     self.lang = lang_map.get(choice, "en")
+
      # 2. Обновляем заголовок окна
      self.title(strings.TEXTS[self.lang]["app_title"])
     
@@ -186,6 +191,17 @@ class GameApp(ctk.CTk):
             
             # 2. Спрашиваем новое имя
             new_name = ctk.CTkInputDialog(text=t["new_hero_ask"], title=t["new_hero_title"]).get_input()
+            
+            # Проверяем: если нажали отмену, ввели пустую строку или одни пробелы
+            if not new_name or not new_name.strip():
+                if self.lang == "ru":
+                    self.hero.name = "Герой"
+                elif self.lang == "jp":
+                    self.hero.name = "勇者"  # Тот самый Юша (Yūsha)
+                else:
+                    self.hero.name = "Hero"
+            else:
+                self.hero.name = new_name.strip() # Убираем лишние пробелы по краям
             
             # Сбрасываем статы (названия предметов оставляем как в БД — "Зелье")
             self.hero.hp = 100
@@ -356,16 +372,23 @@ if __name__ == "__main__":
     root_init = ctk.CTk()
     root_init.withdraw()
     
-    # Обновили текст, добавив /jp
+    # Получаем список всех доступных языков прямо из твоего словаря TEXTS
+    available_languages = list(strings.TEXTS.keys()) 
+    # Формируем строку подсказки автоматически: "ru, en, jp, zh"
+    lang_hint = ", ".join(available_languages)
+
     lang_choice = ctk.CTkInputDialog(
-        text="Выберите язык / Choose language / 言語を選択 (ru/en/jp):", 
+        text=f"Select language / 选择语言 ({lang_hint}):", 
         title="Language"
     ).get_input()
     
     root_init.destroy()
-    # Если игрок закрыл окно, ставим русский по умолчанию
-    selected_lang = lang_choice.lower() if lang_choice and lang_choice.lower() in ['ru', 'en', 'jp'] else 'ru'
 
+    # Проверяем: если ввод есть в нашем словаре TEXTS — ставим его, иначе — 'ru'
+    if lang_choice and lang_choice.lower() in available_languages:
+        selected_lang = lang_choice.lower()
+    else:
+        selected_lang = 'ru'
 
     # 2. Теперь открываем твое новое графическое меню слотов на выбранном языке
     menu = SaveMenu(lang=selected_lang)
@@ -382,10 +405,16 @@ if __name__ == "__main__":
         row = cursor.fetchone()
 
         if row:
+            # Присваиваем данные (одной строки достаточно)
             hero.name, hero.hp, hero.money, hero.damage, inv_raw = row
             hero.inventar = inv_raw.split(",") if inv_raw else []
             print(f"Загружен герой из слота {chosen_slot}")
-        conn.close()
+        else:
+            # Теперь else на своем месте — сразу после if row
+            print("Слот пуст, начинаем новую игру...")
+            # Тут можно вызвать функцию создания имени: hero.name = "Новый герой"
+            
+        conn.close() # Закрываем базу только после всех проверок
 
     # 5. Наконец, запускаем саму игру, передавая героя и выбранный язык
     app = GameApp(hero, lang=selected_lang)
