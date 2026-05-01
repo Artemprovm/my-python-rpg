@@ -1,42 +1,64 @@
-import os # Импортируем модуль для работы с путями
-from PIL import Image # Импортируем библиотеку для открытия картинок
-import customtkinter as ctk # Добавь импорт в начало shop.py
+import os 
+from PIL import Image 
+import customtkinter as ctk 
+from tkinter import messagebox
+import strings # Импортируем файл с переводами
 
-def start_trade(hero, info, BASE_DIR):
-    # Вместо torg = input(...)
-    dialog = ctk.CTkInputDialog(text="Что хочешь купить?", title="Лавка торговца")
-    torg = dialog.get_input() 
+def start_trade(hero, info, BASE_DIR, app):
+    # Короткая ссылка на перевод
+    t = strings.TEXTS[app.lang]
     
-    if torg is None or torg == "": # Если нажал "Отмена" или ничего не ввел
+    # 1. Диалог покупки
+    dialog = ctk.CTkInputDialog(text=t["shop_ask"], title=t["shop_title"])
+    torg_raw = dialog.get_input() 
+    
+    if torg_raw is None or torg_raw == "": 
         return hero.money, hero.damage
     
-    torg = torg.capitalize() # Чтобы "меч" превратился в "Меч"
-    # ... остальной твой код без изменений ...
-
-    if torg in info: # Если товар есть в базе данных
-        price = info[torg]["Цена"] # Узнаем цену
-        
-        # Если товар НЕ "Зелье" И он УЖЕ есть в инвентаре
-        if torg != "Зелье" and torg in hero.inventar:
-            print(f"У вас уже есть {torg}! Зачем вам второй?") # Отказываем в покупке
-            return hero.money, hero.damage # Возвращаемся в меню без изменений
-        
-        if hero.money >= price: # Если денег хватает
-            hero.money -= price # Списываем золото
-            hero.damage += info[torg].get("Урон", 0) # Добавляем урон сразу (как ты и хотел)
-            hero.inventar.append(torg) # Добавляем предмет в список сумки
-            print(f"Успешно! Куплен {torg}. Ваш общий урон: {hero.damage}") # Отчет
-            
-            try: # Пробуем показать картинку
-                put = os.path.join(BASE_DIR, info[torg]["картинка"]) # Собираем путь к файлу
-                img = Image.open(put) # Открываем картинку
-                img.show() # Показываем её на экране
-            except: # Если картинка не найдена или сломана
-                print("Картинку не удалось загрузить.") # Выводим ошибку, но не вылетаем
-        else: # Если денег меньше, чем цена
-            print("Недостаточно золота!") # Сообщаем о бедности
-    else: # Если товара с таким названием нет в словаре
-        print("Такого товара нет в ассортименте.") # Ошибка ввода
+    # Логика поиска предмета (игрок может ввести на английском или русском)
+    torg = torg_raw.capitalize()
     
-    return hero.money, hero.damage # ВАЖНО: отдаем измененные деньги и урон обратно в главное меню
+    # Если ввели на английском (Sword), переводим обратно в ключ (Меч) для поиска в info
+    if app.lang == "en":
+        for ru_name, en_name in t["items"].items():
+            if torg.lower() == en_name.lower():
+                torg = ru_name
+                break
 
+    # 2. Проверка товара в базе данных info
+    if torg in info: 
+        price = info[torg]["Цена"] 
+        display_name = t["items"].get(torg, torg) # Имя для вывода в сообщения
+        
+        # Проверка на дубликат
+        if torg != "Зелье" and torg in hero.inventar:
+            messagebox.showwarning(t["shop_title"], t["already_have"].format(display_name))
+            return hero.money, hero.damage 
+        
+        # Проверка денег
+        if hero.money >= price: 
+            hero.money -= price 
+            hero.damage += info[torg].get("Урон", 0) 
+            hero.inventar.append(torg) 
+            
+            # Сообщение об успехе
+            msg = t["buy_success"].format(display_name, hero.damage)
+            messagebox.showinfo(t["shop_title"], msg)
+            
+            # Показ картинки
+            try: 
+                put = os.path.join(BASE_DIR, info[torg]["картинка"]) 
+                img = Image.open(put) 
+                img.show() 
+            except: 
+                print(t["img_err"]) 
+        else: 
+            messagebox.showwarning(t["shop_title"], t["no_gold"])
+    else: 
+        messagebox.showerror(t["shop_title"], t["no_item"])
+    
+    # ОБНОВЛЯЕМ ИНТЕРФЕЙС
+    app.update_stats_ui()
+    app.render_inventory()
+    
+    return hero.money, hero.damage
