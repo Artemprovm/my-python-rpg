@@ -254,12 +254,15 @@ class GameApp(ctk.CTk):
         self.render_inventory()
 
     def open_casino(self):
-     if self.hero.hp <= 0:
-        messagebox.showwarning("Мертвец", "Мертвым деньги не нужны!")
-        return 
-
-    # Вызываем функцию и передаем в неё само окно (self)
-     casino.start_gamble(self.hero, self)
+        t = strings.TEXTS[self.lang] # Подключаем перевод
+        
+        if self.hero.hp <= 0:
+            # Используем заголовок и сообщение из словаря
+            messagebox.showwarning(t["dead_warning_title"], t["dead_casino_msg"])
+            return
+            
+        # Если живой — пускаем играть
+        casino.start_gamble(self.hero, self)
 
     def save_game(self):
         t = strings.TEXTS[self.lang] # Короткая ссылка на перевод
@@ -387,7 +390,3 @@ if __name__ == "__main__":
     # 5. Наконец, запускаем саму игру, передавая героя и выбранный язык
     app = GameApp(hero, lang=selected_lang)
     app.mainloop()
-
-
-
-

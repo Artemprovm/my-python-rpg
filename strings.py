@@ -77,6 +77,10 @@ TEXTS = {
         "slot_name": "Слот",
         "new_game": "🔄 Новая игра",
 
+        "dead_warning_title": "Мертвец",
+        "dead_casino_msg": "Мертвым деньги не нужны!",
+
+
         "health_title": "Здоровье",
         "healed": "Вы использовали {}!",
         "info_title": "Инфо",
@@ -156,6 +160,9 @@ TEXTS = {
 
         "save_title": "💾 Save",
         "save_file_ok": "Your hero has been successfully saved to the file!",
+
+        "dead_warning_title": "Dead Man",
+        "dead_casino_msg": "The dead don't need money!",
 
         "casino_welcome": "--- 'LUCKY SLIME' CASINO ---",
         "bet_ask": "How much will you bet?",
@@ -281,6 +288,8 @@ TEXTS = {
             "Волк": "ウルフ",
             "Огр": "オーガ"
         },
+        "dead_warning_title": "死者",
+        "dead_casino_msg": "死者に金は必要ない！",
         "health_title": "体力",
         "healed": "{} を使用した！",
         "is_weapon_msg": "{} は武器なので使用できません。",
