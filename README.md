@@ -1,6 +1,6 @@
 # My Python RPG ⚔️
 
-[Русский](#русский) | [English](#english) | [日本語](#日本語)
+[Русский](#русский) | [English](#english) | [日本語](#日本語) | [简体中文](#简体中文)
 
 ---
 
@@ -67,3 +67,26 @@ git clone https://github.com
 pip install customtkinter pillow
 python main.py
 ```
+
+---
+
+## 简体中文
+
+这是我的第一个使用 Python 开发的带有图形界面的严肃游戏项目。该项目已经从一个简单的文本冒险游戏演变成了一个功能完善的窗口应用程序。
+
+### 🎨 核心机制：
+* **现代 GUI：** 基于 CustomTkinter 的界面，支持多语言本地化。
+* **本地化：** 完美支持 RU/EN/JP/ZH 语言，可在游戏中实时切换。
+* **存档系统：** 使用 SQLite3 数据库在多个存档位中存储游戏进度。
+* **小游戏：** 怪物狩猎、商店交易以及“幸运史莱姆”赌场。
+
+### 🛠 技术栈：
+* **Python 3.10+**, **CustomTkinter**, **SQLite3**, **Pillow**.
+
+### 📦 运行项目：
+```bash
+git clone https://github.com
+pip install customtkinter pillow
+python main.py
+```
+
