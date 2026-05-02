@@ -1,2 +1,11 @@
 save.json
 rpg_game.db
+# Игнорировать папки с кэшем Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Игнорировать папки, которые создает PyInstaller при сборке
+build/
+dist/
+*.spec
