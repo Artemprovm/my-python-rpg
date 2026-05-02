@@ -10,6 +10,44 @@ import strings # Подключаем настройки
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+
+# 1. Сначала создаем путь к папке модов
+MODS_DIR = os.path.join(BASE_DIR, "mods")
+
+# 2. Если папки нет, создаем её (чтобы игрок её увидел рядом с игрой)
+if not os.path.exists(MODS_DIR):
+    os.makedirs(MODS_DIR)
+
+def load_mods():
+    if not os.path.exists(MODS_DIR):
+        return
+
+    for filename in os.listdir(MODS_DIR):
+        if filename.endswith(".json"):
+            path = os.path.join(MODS_DIR, filename)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    mod_data = json.load(f)
+                    
+                    # Проходим по каждому предмету в моде
+                    for item_name, content in mod_data.items():
+                        # 1. Если в моде есть раздел "stats", берем данные оттуда
+                        if isinstance(content, dict) and "stats" in content:
+                            shop.info[item_name] = content["stats"]
+                            
+                            # 2. Если есть раздел "translations", раскидываем их по языкам
+                            if "translations" in content:
+                                for lang_code, translated_name in content["translations"].items():
+                                    if lang_code in strings.TEXTS:
+                                        strings.TEXTS[lang_code]["items"][item_name] = translated_name
+                        else:
+                            # Если мод сделан по-старому (просто статы), загружаем как раньше
+                            shop.info[item_name] = content
+                            
+                    print(f"Мод {filename} успешно загружен!")
+            except Exception as e:
+                print(f"Ошибка в моде {filename}: {e}")
+
 def init_db():
     conn = sqlite3.connect("rpg_game.db")
     cursor = conn.cursor()
@@ -36,14 +74,6 @@ class Player:
         self.money = 100
         self.hp = 100
         self.inventar = ["Зелье"]
-
-# --- База данных предметов ---
-info = {
-    "Меч": {"Урон": 25, "Цена": 50, "картинка": "mech.png"},
-    "Зелье": {"Урон": 0, "Цена": 20, "Лечение": 20, "картинка": "zelie.png"},
-    "Лук": {"Урон": 20, "Цена": 40, "картинка": "luk.png"},
-    "Нож": {"Урон": 10, "Цена": 20, "картинка": "nozh.png"}
-}
 
 class GameApp(ctk.CTk):
     def __init__(self, hero, lang="ru"): # Добавили lang
@@ -96,6 +126,9 @@ class GameApp(ctk.CTk):
         self.btn_casino = ctk.CTkButton(self, text=t["casino"], command=self.open_casino)
         self.btn_casino.pack(pady=5)
 
+        self.btn_dlc = ctk.CTkButton(self, text=t.get("dlc", "DLC"), command=self.open_dlc_menu, fg_color="purple")
+        self.btn_dlc.pack(pady=5)
+
         # 4. Сохранение
         self.btn_save = ctk.CTkButton(self, text=t["save_btn"], command=self.save_game)
         self.btn_save.pack(pady=5)
@@ -132,10 +165,57 @@ class GameApp(ctk.CTk):
      self.btn_hunt.configure(text=t["hunt"])
      self.btn_casino.configure(text=t["casino"])
      self.btn_save.configure(text=t["save_btn"])
+     self.btn_dlc.configure(text=t.get("dlc", "DLC"))
     
      # 4. Обновляем интерфейс статуса и инвентарь
      self.update_stats_ui()
      self.render_inventory()
+
+    def open_dlc_menu(self):
+        dlc_dir = os.path.join(BASE_DIR, "dlc")
+        t = strings.TEXTS[self.lang] # Берем перевод
+        
+        if not os.path.exists(dlc_dir):
+            os.makedirs(dlc_dir)
+            messagebox.showinfo("DLC", t.get("dlc_folder_created", "Folder created"))
+            return
+
+        available_dlc = [f[:-3] for f in os.listdir(dlc_dir) if f.endswith(".py") and f != "__init__.py"]
+
+        if not available_dlc:
+            messagebox.showinfo("DLC", t.get("dlc_not_found", "No DLC found"))
+            return
+
+        dlc_list_str = "\n".join(available_dlc)
+        dialog = ctk.CTkInputDialog(
+            text=t.get("dlc_list_msg", "Enter DLC name:").format(dlc_list_str), 
+            title="DLC Menu"
+        )
+        choice = dialog.get_input()
+
+        if choice and choice in available_dlc:
+            self.run_dlc(choice)
+
+    def run_dlc(self, dlc_name):
+        t = strings.TEXTS[self.lang]
+        try:
+            import importlib
+            import sys
+
+            dlc_path = os.path.join(BASE_DIR, "dlc")
+            if dlc_path not in sys.path:
+                sys.path.append(dlc_path)
+
+            module = importlib.import_module(dlc_name)
+            importlib.reload(module)
+
+            if hasattr(module, "start_adventure"):
+                module.start_adventure(self.hero, self)
+            else:
+                messagebox.showerror("DLC Error", t.get("dlc_no_func", "Error").format(dlc_name))
+        
+        except Exception as e:
+            messagebox.showerror("DLC Runtime Error", t.get("dlc_run_error", "Error").format(e))
 
     def save_game(self):
         data_to_save = {
@@ -240,7 +320,7 @@ class GameApp(ctk.CTk):
             btn.grid(row=i // 4, column=i % 4, padx=5, pady=5)
 
     def use_item(self, item_name):
-        item_data = info.get(item_name, {})
+        item_data = shop.info.get(item_name, {})
         t = strings.TEXTS[self.lang] # Берем нужный язык
         
         # Переводим название предмета для вывода в сообщении
@@ -261,13 +341,11 @@ class GameApp(ctk.CTk):
             messagebox.showinfo(t["info_title"], t["is_weapon_msg"].format(display_name))
 
     def open_shop(self):
-        # Добавляем self четвертым аргументом
-        self.hero.money, self.hero.damage = shop.start_trade(self.hero, info, BASE_DIR, self)
-        
-        # Эти строки можно оставить, но в новом shop.py я их тоже добавил 
-        # для автоматического обновления прямо во время покупки
-        self.update_stats_ui()
-        self.render_inventory()
+     # Заменяем info на shop.info
+     self.hero.money, self.hero.damage = shop.start_trade(self.hero, shop.info, BASE_DIR, self)
+    
+     self.update_stats_ui()
+     self.render_inventory()
 
     def open_casino(self):
         t = strings.TEXTS[self.lang] # Подключаем перевод
@@ -366,6 +444,7 @@ class SaveMenu(ctk.CTk):
 # --- ЗАПУСК ---
 if __name__ == "__main__":
     init_db()  # Инициализируем базу данных
+    load_mods()
     hero = Player() # Создаем базового игрока
 
     # 1. Сначала спрашиваем язык через простое окошко

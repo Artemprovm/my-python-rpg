@@ -4,6 +4,14 @@ import customtkinter as ctk
 from tkinter import messagebox
 import strings # Импортируем файл с переводами
 
+# База данных предметов теперь живет здесь!
+info = {
+    "Меч": {"Урон": 25, "Цена": 50, "картинка": "mech.png"},
+    "Зелье": {"Урон": 0, "Цена": 20, "Лечение": 20, "картинка": "zelie.png"},
+    "Лук": {"Урон": 20, "Цена": 40, "картинка": "luk.png"},
+    "Нож": {"Урон": 10, "Цена": 20, "картинка": "nozh.png"}
+}
+
 def start_trade(hero, info, BASE_DIR, app):
     # Короткая ссылка на перевод
     t = strings.TEXTS[app.lang]

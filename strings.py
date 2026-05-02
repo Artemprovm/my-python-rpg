@@ -53,6 +53,14 @@ TEXTS = {
         "no_money": "У вас нет столько денег!",
         "min_bet": "Ставка должна быть больше нуля!",
 
+        # Пример для RU
+        "dlc_folder_created": "Папка 'dlc' создана. Положите туда файлы .py",
+        "dlc_not_found": "У вас пока нет установленных дополнений.",
+        "dlc_list_msg": "Доступные дополнения:\n{}\n\nВведите название:",
+        "dlc_no_func": "В файле {}.py не найдена функция start_adventure",
+        "dlc_run_error": "Ошибка при запуске DLC: {}",
+
+
         "enemy": "Враг",
         "fight_or_run": "Враг: {} (HP: {}, Урон: {})\nБой или Побег?",
         "run_success": "Вы успешно скрылись!",
@@ -110,7 +118,9 @@ TEXTS = {
             "Зелье": "Зелье",
             "Лук": "Лук",
             "Нож": "Нож"
-        }
+        },
+
+        "dlc": "Дополнения"
     },
     "en": {
         # Interface
@@ -132,6 +142,8 @@ TEXTS = {
 
         "load_title": "Loading",
         "load_ask": "Which slot to load? (1, 2, 3...):",
+
+        "dlc": "DLC / Expansions",
         
         # System Popups
         "confirm_title": "Confirmation",
@@ -150,6 +162,13 @@ TEXTS = {
         "dead_warning_title": "Dead Man",
         "dead_hunt_msg": "The dead don't hunt! Restore health first.",
         "dead_casino_msg": "The dead don't need money!",
+
+        "dlc": "DLC / Expansions",
+        "dlc_folder_created": "Folder 'dlc' created. Put .py files there.",
+        "dlc_not_found": "No expansions installed.",
+        "dlc_list_msg": "Available DLC:\n{}\n\nEnter name:",
+        "dlc_no_func": "Function start_adventure not found in {}.py",
+        "dlc_run_error": "Error running DLC: {}",
 
         "confirm_title": "Confirmation",
         "confirm_reset": "Are you sure you want to start a new game? All progress will be lost!",
@@ -253,6 +272,7 @@ TEXTS = {
         "dead_hunt_msg": "死者は狩りができません！まずは回復してください。",
         "dead_casino_msg": "死者に金は必要ない！",
         "confirm_title": "確認",
+        "dlc": "追加コンテンツ",
         "confirm_reset": "本当に新しく始めますか？全ての進捗が失われます！",
         "new_hero_title": "新しい冒険",
         "new_hero_ask": "新しい勇者の名前を入力してください:",
@@ -288,6 +308,14 @@ TEXTS = {
             "Волк": "ウルフ",
             "Огр": "オーガ"
         },
+
+        "dlc": "追加コンテンツ",
+        "dlc_folder_created": "「dlc」フォルダを作成しました。.pyファイルを入れてください。",
+        "dlc_not_found": "インストールされた追加コンテンツはありません。",
+        "dlc_list_msg": "利用可能なDLC:\n{}\n\n名前を入力してください:",
+        "dlc_no_func": "{}.py に start_adventure 関数が見つかりません",
+        "dlc_run_error": "DLC実行エラー: {}",
+
         "dead_warning_title": "死者",
         "dead_casino_msg": "死者に金は必要ない！",
         "health_title": "体力",
@@ -334,6 +362,8 @@ TEXTS = {
         "dead_hunt_msg": "死人不能打猎！请先恢复生命值。",
         "dead_casino_msg": "死人不需要钱！",
 
+        "dlc": "附加内容",
+
         "casino_welcome": "--- “幸运史莱姆”赌场 ---",
         "bet_ask": "你打算下多少赌注？",
         "gold": "金币",
@@ -357,6 +387,13 @@ TEXTS = {
          "Волк": "狼",
          "Огр": "食人魔"
         },
+
+        "dlc": "附加内容",
+        "dlc_folder_created": "已创建 'dlc' 文件夹。请将 .py 文件放入其中。",
+        "dlc_not_found": "未安装任何附加内容。",
+        "dlc_list_msg": "可用 DLC:\n{}\n\n请输入名称:",
+        "dlc_no_func": "在 {}.py 中未找到 start_adventure 函数",
+        "dlc_run_error": "运行 DLC 时出错: {}",
 
         "info_title": "信息",
         "slot_name": "存档栏",
@@ -383,4 +420,3 @@ TEXTS = {
         }
     },
 }
-
